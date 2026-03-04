@@ -1,29 +1,32 @@
-'''
-Docstring for schemas.schema_servicios
-'''
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 
 class ServicioBase(BaseModel):
-    '''Clase para modelar los campos de tabla Servicios'''
-    nombre: str
-    descripcion: str
-    costo: float
-    duracion_minutos: int
-    estado: bool
-    fecha_registro: datetime
-    fecha_actualizacion: datetime
-# pylint: disable=too-few-public-methods, unnecessary-pass
+    '''Esquema base para servicios'''
+    nombre: str = Field(..., max_length=60)
+    descripcion: Optional[str] = Field(None, max_length=60)
+    costo: float = Field(..., gt=0)
+    duracion_minutos: int = Field(..., gt=0)
+    estado: bool = True
+
 class ServicioCreate(ServicioBase):
-    '''Clase para crear un Servicio basado en la tabla Servicios'''
-    pass
-class ServicioUpdate(ServicioBase):
-    '''Clase para actualizar un Servicio basado en la tabla Servicios'''
+    '''Esquema para crear servicio'''
     pass
 
+class ServicioUpdate(BaseModel):
+    '''Esquema para actualizar servicio'''
+    nombre: Optional[str] = Field(None, max_length=60)
+    descripcion: Optional[str] = Field(None, max_length=60)
+    costo: Optional[float] = Field(None, gt=0)
+    duracion_minutos: Optional[int] = Field(None, gt=0)
+    estado: Optional[bool] = None
+
 class Servicio(ServicioBase):
-    '''Clase para realizar operaciones por ID en tabla Servicios'''
+    '''Esquema para respuesta de servicio'''
     Id: int
+    fecha_registro: datetime
+    fecha_modificacion: Optional[datetime] = None
+
     class Config:
-        '''Utilizar el orm para ejecutar las funcionalidades'''
-        orm_mode =True
+        from_attributes = True

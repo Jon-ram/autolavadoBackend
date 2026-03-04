@@ -1,31 +1,37 @@
-'''
-Docstring for schemas.schema_vehiculos
-'''
-
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 
 class VehiculoBase(BaseModel):
-    '''Clase para modelar los campos de tabla Vehiculos'''
-    placa: str
-    serie: str
-    modelo: str
-    color: str
-    tipo: str
-    anio: int
-    estatus: bool
-    fecha_registro: datetime
-    fecha_actualizacion: datetime
-# pylint: disable=too-few-public-methods, unnecessary-pass
+    '''Esquema base para vehículos'''
+    usuario_Id: int
+    placa: str = Field(..., max_length=15)
+    serie: str = Field(..., max_length=60)
+    modelo: str = Field(..., max_length=60)
+    color: str = Field(..., max_length=60)
+    tipo: str = Field(..., max_length=60)
+    anio: int = Field(..., ge=1900, le=datetime.now().year)
+    estatus: bool = True
+
 class VehiculoCreate(VehiculoBase):
-    '''Clase para crear un Vehiculo basado en la tabla Vehiculo'''
+    '''Esquema para crear vehículo'''
     pass
-class VehiculoUpdate(VehiculoBase):
-    '''Clase para actualizar un Vehiculo basado en la tabla Vehiculo'''
-    pass
+
+class VehiculoUpdate(BaseModel):
+    '''Esquema para actualizar vehículo (todos opcionales)'''
+    placa: Optional[str] = Field(None, max_length=15)
+    serie: Optional[str] = Field(None, max_length=60)
+    modelo: Optional[str] = Field(None, max_length=60)
+    color: Optional[str] = Field(None, max_length=60)
+    tipo: Optional[str] = Field(None, max_length=60)
+    anio: Optional[int] = Field(None, ge=1900, le=datetime.now().year)
+    estatus: Optional[bool] = None
+
 class Vehiculo(VehiculoBase):
-    '''Clase para realizar operaciones por ID en tabla Vehiculo'''
+    '''Esquema para respuesta de vehículo'''
     Id: int
+    fecha_registro: datetime
+    fecha_modificacion: Optional[datetime] = None
+
     class Config:
-        '''Utilizar el orm para ejecutar las funcionalidades'''
-        orm_mode =True
+        from_attributes = True

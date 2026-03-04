@@ -1,8 +1,16 @@
+'''Establece la conexión con el servidor de Base de Datos'''
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import pymysql
 
-SQLALCHEMY_DATABASE_URL = "mysql://root:1234@127.0.0.1:3306/autolavadoBD"  
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+# ¡Esta línea es la clave! Hace que pymysql funcione como MySQLdb
+pymysql.install_as_MySQLdb()
+
+load_dotenv()
+
+engine = create_engine(os.getenv("SQLALCHEMY_DATABASE_URL"))
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

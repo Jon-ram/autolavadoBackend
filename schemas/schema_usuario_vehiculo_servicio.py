@@ -1,30 +1,39 @@
-'''
-Docstring for schemas.schema_usuario_vehiculo_servicio
-'''
-from datetime import datetime,date,time
-from pydantic import BaseModel
+from datetime import datetime, date, time
+from typing import Optional
+from pydantic import BaseModel, Field
+from models.model_usuario_vehiculo_servicio import Solicitud
 
 class UsuarioVehiculoServicioBase(BaseModel):
-    '''Clase para modelar los campos de tabla Usuario_Vehiculo_Servicio'''
-    cajero_id: int
-    lavador_id: int
-    servicio_id: int
-    vehiculo_id: int
+    '''Esquema base para servicios de vehículos'''
+    cajero_Id: int
+    lavador_Id: int
+    servicio_Id: int
+    vehiculo_Id: int
     fecha: date
     hora: time
-    estado: bool
-    fecha_registro: datetime
-    fecha_actualizacion: datetime
-# pylint: disable=too-few-public-methods, unnecessary-pass
+    estatus: Solicitud = Solicitud.Programa
+    estado: bool = True
+
 class UsuarioVehiculoServicioCreate(UsuarioVehiculoServicioBase):
-    '''Clase para asignar un servicio a un vehiculo'''
+    '''Esquema para crear servicio de vehículo'''
     pass
-class UsuarioVehiculoServicioUpdate(UsuarioVehiculoServicioBase):
-    '''Clase para actualizar un servicio a un vehiculo'''
-    pass
+
+class UsuarioVehiculoServicioUpdate(BaseModel):
+    '''Esquema para actualizar servicio de vehículo (todos opcionales)'''
+    cajero_Id: Optional[int] = None
+    lavador_Id: Optional[int] = None
+    servicio_Id: Optional[int] = None
+    vehiculo_Id: Optional[int] = None
+    fecha: Optional[date] = None
+    hora: Optional[time] = None
+    estatus: Optional[Solicitud] = None
+    estado: Optional[bool] = None
+
 class UsuarioVehiculoServicio(UsuarioVehiculoServicioBase):
-    '''Clase para realizar operaciones por ID en tabla Usuario_Vehiculo_Servicio'''
+    '''Esquema para respuesta de servicio de vehículo'''
     Id: int
+    fecha_registro: datetime
+    fecha_actualizacion: Optional[datetime] = None
+
     class Config:
-        '''Utilizar el orm para ejecutar las funcionalidades'''
-        orm_mode =True
+        from_attributes = True

@@ -10,3 +10,8 @@ __pycache__
 # Ignorar archivo compilado de Python
 *.pyc
 
+# Variables de entorno
+.env
+.env.local
+.env.*
+

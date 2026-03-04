@@ -1,39 +1,64 @@
-'''
-Docstring for schemas.schema_user
-'''
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 class UserBase(BaseModel):
-    '''Clase para modelar los campos de tabla Usuarios'''
-    nombre: str
-    primer_apellido: str
-    segundo_apellido: str
-    direccion: str
-    correo_electronico: str
-    numero_telefono: str
-    contrasena: str
-    estatus: bool
-    fecha_registro: datetime
-    fecha_Actualizacion: datetime
-# pylint: disable=too-few-public-methods, unnecessary-pass
-class UserCreate(UserBase):
-    '''Clase para crear un Rol basado en la tabla Rols'''
-    pass
-class UserUpdate(UserBase):
-    '''Clase para actualizar un Rol basado en la tabla Rols'''
-    pass
+    '''Esquema base para usuarios'''
+    rol_Id: int
+    nombre: str = Field(..., max_length=60)
+    papellido: str = Field(..., max_length=60)
+    sapellido: Optional[str] = Field(None, max_length=60)
+    direccion: Optional[str] = Field(None, max_length=100)
+    correo_electronico: EmailStr
+    numero_telefono: str = Field(..., pattern=r"^\d{10}$")
+    estatus: bool = True
 
-class User(UserBase):
-    '''Clase para realizar operaciones por ID en tabla Rol'''
-    Id: int
-    class Config:
-        '''Utilizar el orm para ejecutar las funcionalidades'''
-        orm_mode =True
+class UserCreate(UserBase):
+    '''Esquema para crear usuario'''
+    contrasena: str = Field(..., min_length=6)
+    
+    @field_validator('contrasena')
+    @classmethod
+    def validate_password_length(cls, v):
+        # Verificar bytes, no caracteres (límite de bcrypt)
+        if len(v.encode('utf-8')) > 72:
+            raise ValueError('La contraseña no puede exceder 72 bytes cuando se codifica en UTF-8')
+        return v
+
+class UserUpdate(BaseModel):
+    '''Esquema para actualizar usuario'''
+    rol_Id: Optional[int] = None
+    nombre: Optional[str] = Field(None, max_length=60)
+    papellido: Optional[str] = Field(None, max_length=60)
+    sapellido: Optional[str] = Field(None, max_length=60)
+    direccion: Optional[str] = Field(None, max_length=100)
+    correo_electronico: Optional[EmailStr] = None
+    numero_telefono: Optional[str] = Field(None, pattern=r"^\d{10}$")
+    contrasena: Optional[str] = Field(None, min_length=6)
+    
+    @field_validator('contrasena')
+    @classmethod
+    def validate_password_length(cls, v):
+        if v and len(v.encode('utf-8')) > 72:
+            raise ValueError('La contraseña no puede exceder 72 bytes cuando se codifica en UTF-8')
+        return v
 
 class UserLogin(BaseModel):
-    '''Clase para realizar login por numero de telefono o correo'''
-    numero_telefono: Optional[str] = None
-    correo_electronico: Optional[str] = None
+    '''Esquema para login'''
+    correo_electronico: Optional[EmailStr] = None
+    numero_telefono: Optional[str] = Field(None, pattern=r"^\d{10}$")
     contrasena: str
+
+class Token(BaseModel):
+    '''Esquema para el token JWT'''
+    access_token: str
+    token_type: str
+
+class User(UserBase):
+    '''Esquema para respuesta de usuario'''
+    Id: int
+    fecha_registro: datetime
+    fecha_modificacion: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

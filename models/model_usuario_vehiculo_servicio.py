@@ -1,27 +1,18 @@
-'''
-Docstring for models.model_usuario_vehiculo_servicio.
-Esta Clase permite generar el modelo para las ventas y asignaciones
-'''
-
 from sqlalchemy import Column, Integer, Boolean, DateTime, Date, Time, ForeignKey, Enum
 from enum import Enum as PyEnum
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from config.db import Base
 
-
 class Solicitud(str, PyEnum):
-    '''
-    Clase para especificar estatus de solicitud
-    '''
+    '''Estatus de solicitud'''
     Programa = "Programa"
     Proceso = "Proceso"
     Realizada = "Realizada"
     Cancelada = "Cancelada"
 
-
 class ServicioVehiculo(Base):
-    '''Clase para especificar tabla usuario_vehiculo_servicio'''
-
+    '''Modelo para la tabla de servicios por vehículo'''
     __tablename__ = "tbd_usuario_vehiculo_servicio"
 
     Id = Column(Integer, primary_key=True, index=True)
@@ -30,12 +21,15 @@ class ServicioVehiculo(Base):
     servicio_Id = Column(Integer, ForeignKey("tbc_servicio.Id"))
     vehiculo_Id = Column(Integer, ForeignKey("tbb_vehiculo.Id"))
 
-    fecha = Column(Date)
-    hora = Column(Time)
-    estatus = Column(Enum(Solicitud))
-    estado = Column(Boolean)
-    fecha_registro = Column(DateTime)
-    fecha_actualizacion = Column(DateTime)
+    fecha = Column(Date, nullable=False)
+    hora = Column(Time, nullable=False)
+    estatus = Column(Enum(Solicitud), default=Solicitud.Programa)
+    estado = Column(Boolean, default=True)
+    fecha_registro = Column(DateTime, server_default=func.now())
+    fecha_actualizacion = Column(DateTime, onupdate=func.now())
 
-    cajero = relationship("User", foreign_keys=[cajero_Id])
-    lavador = relationship("User", foreign_keys=[lavador_Id])
+    # Relaciones
+    cajero_rel = relationship("User", foreign_keys=[cajero_Id], back_populates="cajero")
+    lavador_rel = relationship("User", foreign_keys=[lavador_Id], back_populates="lavador")
+    servicio = relationship("Servicio", back_populates="vehiculos_servicios")
+    vehiculo = relationship("Vehiculo", back_populates="servicios")
